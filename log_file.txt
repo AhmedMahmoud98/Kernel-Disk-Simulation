@@ -1,0 +1,11 @@
+Process asked to ADD "Hello" to the Disk at Time Slot 5
+Disk response that it has 10 free slots at Time Slot 5
+The Kernel asked Disk to ADD "Hello" at Time Slot 5
+Process asked to ADD "This is me" to the Disk at Time Slot 10
+Disk response that it has 9 free slots at Time Slot 10
+The Kernel asked Disk to ADD "This is me" at Time Slot 10
+Process asked to DEL slot #5 from the Disk at Time Slot 15
+Disk response that it has 8 free slots at Time Slot 15
+The Kernel asked Disk to DEL slot #5 at Time Slot 15
+Process with PID 21606 terminated with exit code 2560" at Time Slot 15
+Kernel Terminated at Time Slot 16
