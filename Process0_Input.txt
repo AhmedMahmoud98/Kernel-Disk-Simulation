@@ -1,3 +1,1 @@
-5 ADD "Hello"
-10 ADD "This is me"
-15 DEL 5
+3 ADD "Hello"

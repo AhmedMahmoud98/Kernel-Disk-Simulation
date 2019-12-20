@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     signal(SIGCHLD, Process_terminated);
     signal(SIGUSR2, SIG_IGN);
     //number_of_alive_processes = number_of_processes = atoi(argv[1]);
-    number_of_alive_processes = number_of_processes = 1;
+    number_of_alive_processes = number_of_processes = 2;
     log_file.open("log_file.txt", ios::out | ios::trunc );
 
     create_msg_queues();
@@ -83,6 +83,8 @@ void create_msg_queues()
     process_to_kernel_q = msgget(IPC_PRIVATE, 0644);
     kernel_to_disk_q = msgget(IPC_PRIVATE, 0644);
     disk_to_kernel_q = msgget(IPC_PRIVATE, 0644);
+    cout << int(process_to_kernel_q) << " " << 
+            int(kernel_to_disk_q) << " " << int(disk_to_kernel_q) << endl;  
 }
 ////////////////////////////////////////////////////////////////////////////
 void fork_process_and_disk()
@@ -106,7 +108,7 @@ void fork_process_and_disk()
     if (getpid() != Kernel_PID)
     {
         int MyIndex = -1;
-        for (int i = 0; i < number_of_processes; i++)
+        for (int i = number_of_processes - 1; i >= 0; i--)
         {
             if (Processes_PIDs[i] == 0)
             {
@@ -187,7 +189,8 @@ void receive_all_process_requests()
 void receive_status_from_disk()
 {
     msgbuff disk_status_msg;
-    int rec_val = msgrcv(disk_to_kernel_q, &disk_status_msg, sizeof(disk_status_msg.mtext), 0, !IPC_NOWAIT);
+    int rec_val = msgrcv(disk_to_kernel_q, &disk_status_msg, 
+                  sizeof(disk_status_msg.mtext), 0, !IPC_NOWAIT);
     disk_free_slots_number = atoi(disk_status_msg.mtext);
 
     write_to_log_file(disk_response, disk_status_msg);
@@ -266,7 +269,7 @@ void write_to_log_file(event event_type, msgbuff message)
     {
         log_text = "Process with PID " + message_text 
                  + " terminated with exit code " + to_string(message.mtype)
-                 + "\" at Time Slot " + to_string(CLK);
+                 + " at Time Slot " + to_string(CLK);
     }
 
     log_file <<  log_text << endl;

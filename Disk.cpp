@@ -52,7 +52,7 @@ void move_on (int SigNum)
 ////////////////////////////////////////////////////////////////////
 void send_kernel_disk_status(int SigNum)
 {
-    struct msgbuff disk_status_msg;
+    msgbuff disk_status_msg;
 
     strcpy(disk_status_msg.mtext, to_string(number_of_free_slots).c_str());
 
