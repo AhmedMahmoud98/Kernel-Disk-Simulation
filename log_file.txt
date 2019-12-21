@@ -1,9 +1,7 @@
 Process asked to ADD "Hello" to the Disk at Time Slot 3
+Process asked to ADD "Hello12" to the Disk at Time Slot 3
 Disk response that it has 10 free slots at Time Slot 3
 The Kernel asked Disk to ADD "Hello" at Time Slot 3
-Process with PID 7172 terminated with exit code 0 at Time Slot 3
-Process asked to ADD "Hello12" to the Disk at Time Slot 4
-Process with PID 7173 terminated with exit code 0 at Time Slot 4
 Disk response that it has 9 free slots at Time Slot 6
 The Kernel asked Disk to ADD "Hello12" at Time Slot 6
 Kernel Terminated at Time Slot 9

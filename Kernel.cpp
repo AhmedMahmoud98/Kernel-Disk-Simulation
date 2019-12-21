@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
             requests_queue.pop();
         }
 
+        
         if(requests_queue.empty() && number_of_alive_processes == 0 && disk_latency == 0)
             End();
     }
@@ -83,8 +84,8 @@ void create_msg_queues()
     process_to_kernel_q = msgget(IPC_PRIVATE, 0644);
     kernel_to_disk_q = msgget(IPC_PRIVATE, 0644);
     disk_to_kernel_q = msgget(IPC_PRIVATE, 0644);
-    cout << int(process_to_kernel_q) << " " << 
-            int(kernel_to_disk_q) << " " << int(disk_to_kernel_q) << endl;  
+    //cout << int(process_to_kernel_q) << " " << 
+    //        int(disk_to_kernel_q)<< " " << int(kernel_to_disk_q)  << endl;  
 }
 ////////////////////////////////////////////////////////////////////////////
 void fork_process_and_disk()
@@ -158,6 +159,7 @@ void move_on(int SigNum)
     if(disk_latency > 0)
         disk_latency--;
 
+    //cout << requests_queue.size() << " " << number_of_alive_processes << " " <<  disk_latency << endl; 
     killpg(0, SIGUSR2);
     alarm(1);
 }
@@ -188,13 +190,19 @@ void receive_all_process_requests()
 ////////////////////////////////////////////////////////////////////////////
 void receive_status_from_disk()
 {
+    msqid_ds queue_status;
+    int number_of_messages = 0;
+    while(number_of_messages == 0)
+    {
+        int rc = msgctl(disk_to_kernel_q, IPC_STAT, &queue_status);
+        number_of_messages = queue_status.msg_qnum;
+    }
+
     msgbuff disk_status_msg;
     int rec_val = msgrcv(disk_to_kernel_q, &disk_status_msg, 
-                  sizeof(disk_status_msg.mtext), 0, !IPC_NOWAIT);
+                sizeof(disk_status_msg.mtext), 0, !IPC_NOWAIT);
     disk_free_slots_number = atoi(disk_status_msg.mtext);
-
     write_to_log_file(disk_response, disk_status_msg);
-
 }
 ////////////////////////////////////////////////////////////////////////////
 void check_request_type_and_send_it(msgbuff request)
@@ -278,12 +286,15 @@ void write_to_log_file(event event_type, msgbuff message)
 void Process_terminated(int SigNum)
 {
     int pid, stat_loc;
-    pid = wait(&stat_loc);
-    msgbuff process_data;
-    process_data.mtype = stat_loc;
-    strcpy(process_data.mtext , to_string(pid).c_str());
-    write_to_log_file(process_terminated, process_data);
-    number_of_alive_processes--;
+    while(waitpid(-1, NULL, WNOHANG))
+    {
+        number_of_alive_processes--;
+    };
+    //pid = wait(&stat_loc);
+    //msgbuff process_data;
+    //process_data.mtype = stat_loc;
+    //strcpy(process_data.mtext , to_string(pid).c_str());
+    //write_to_log_file(process_terminated, process_data);
 }
 ////////////////////////////////////////////////////////////////////////////
 void End()
@@ -291,5 +302,8 @@ void End()
     string log_text = "Kernel Terminated at Time Slot " + to_string(CLK);
     log_file <<  log_text << endl;
     log_file.close();
+    msgctl(process_to_kernel_q, IPC_RMID, (struct msqid_ds *) 0);
+    msgctl(disk_to_kernel_q, IPC_RMID, (struct msqid_ds *) 0);
+    msgctl(kernel_to_disk_q, IPC_RMID, (struct msqid_ds *) 0);
     killpg(0, SIGKILL);
 }

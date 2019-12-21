@@ -70,21 +70,15 @@ int main(int argc, char *argv[])
     }
 
     
-    while(1)
+    while(number_of_processed_requests < number_of_requests)
     {
-        if(number_of_processed_requests < number_of_requests)
+        if(requests_clk[number_of_processed_requests] == CLK)
         {
-            if(requests_clk[number_of_processed_requests] == CLK)
-            {
-                struct msgbuff Msg = Messages[number_of_processed_requests];
-                int send_val = msgsnd(process_to_kernel_q, &Msg, sizeof(Msg.mtext), !IPC_NOWAIT);
-                number_of_processed_requests++;
-            }
+            struct msgbuff Msg = Messages[number_of_processed_requests];
+            int send_val = msgsnd(process_to_kernel_q, &Msg, sizeof(Msg.mtext), !IPC_NOWAIT);
+            number_of_processed_requests++;
         }
-        else
-            exit(0);
     }
-
 }
 
 void move_on (int SigNum)

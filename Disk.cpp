@@ -20,7 +20,7 @@ int CLK = 0;
 vector <string> Data(10 , "_");
 int number_of_free_slots = 10;
 int kernel_to_disk_q, disk_to_kernel_q;
-struct msgbuff kernel_operation_msg;
+msgbuff kernel_operation_msg;
 
 void move_on(int SigNum);
 void send_kernel_disk_status(int SigNum);
@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     signal(SIGUSR1, send_kernel_disk_status);
     disk_to_kernel_q = atoi(argv[1]);
     kernel_to_disk_q = atoi(argv[2]);
+    //cout << disk_to_kernel_q << " " << kernel_to_disk_q << endl;
 
     while(1)
     {
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
             perform_delete_operation();
     }
 }
-
+////////////////////////////////////////////////////////////////////
 void move_on (int SigNum)
 {
     CLK++;
@@ -53,11 +54,11 @@ void move_on (int SigNum)
 void send_kernel_disk_status(int SigNum)
 {
     msgbuff disk_status_msg;
-
     strcpy(disk_status_msg.mtext, to_string(number_of_free_slots).c_str());
-
+    disk_status_msg.mtype = 1;
     int send_val = msgsnd(disk_to_kernel_q, &disk_status_msg, 
                           sizeof(disk_status_msg.mtext), !IPC_NOWAIT);
+    cout << send_val << endl;
 }
 /////////////////////////////////////////////////////////////////////
 char receive_request_from_kernel()
@@ -73,7 +74,6 @@ char receive_request_from_kernel()
 
         return kernel_operation_msg.mtext[0];
     }
-    
     return '0';
 }
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +106,5 @@ void perform_delete_operation()
             number_of_free_slots++;
         }
     }
-    
 }
 ////////////////////////////////////////////////////////////////////
