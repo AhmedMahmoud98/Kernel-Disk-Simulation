@@ -58,7 +58,6 @@ void send_kernel_disk_status(int SigNum)
     disk_status_msg.mtype = 1;
     int send_val = msgsnd(disk_to_kernel_q, &disk_status_msg, 
                           sizeof(disk_status_msg.mtext), !IPC_NOWAIT);
-    cout << send_val << endl;
 }
 /////////////////////////////////////////////////////////////////////
 char receive_request_from_kernel()
