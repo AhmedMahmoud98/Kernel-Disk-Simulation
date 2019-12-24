@@ -19,7 +19,8 @@ struct msgbuff
 };
 
 enum event { process_request, 
-             disk_response, 
+             disk_response,
+             request_disk_status,            
              request_to_disk,
              process_terminated };
 
@@ -166,7 +167,9 @@ void move_on(int SigNum)
 ////////////////////////////////////////////////////////////////////////////
 void ask_disk_for_status()
 {
+    msgbuff dummy_msg;
     kill(Disk_PID, SIGUSR1);
+    write_to_log_file(request_disk_status, dummy_msg);
 }
 ////////////////////////////////////////////////////////////////////////////
 void receive_all_process_requests()
@@ -242,42 +245,52 @@ int send_del_request_to_disk(string slot_number)
 ////////////////////////////////////////////////////////////////////////////
 void write_to_log_file(event event_type, msgbuff message)
 {
-    string message_text(message.mtext);
     string log_text;
 
     if(event_type == process_request)
     {
+        string message_text(message.mtext);
         message_text = message_text.substr(1, message_text.size() - 1);
         if(message.mtype == 1)
-            log_text = "Process asked to ADD \"" + message_text 
+            log_text = "\n- Process asked to ADD \"" + message_text 
                         + "\" to the Disk at Time Slot " + to_string(CLK);
         else if(message.mtype == 2)
-            log_text = "Process asked to DEL slot #" + message_text 
+            log_text = "\n- Process asked to DEL slot #" + message_text 
                          + " from the Disk at Time Slot " + to_string(CLK);
     }
 
     else if(event_type == disk_response)
     {
-        log_text = "Disk response that it has " + message_text 
+        string message_text(message.mtext);
+        log_text = "- Disk response that it has " + message_text 
                     +" free slots at Time Slot " + to_string(CLK); 
     }
 
     else if(event_type == request_to_disk)
     {
+        string message_text(message.mtext);
         message_text = message_text.substr(1, message_text.size() - 1);
         if(message.mtype == 1)
-            log_text = "The Kernel asked Disk to ADD \"" + message_text 
+            log_text = "- The Kernel asked Disk to ADD \"" + message_text 
                         + "\" at Time Slot " + to_string(CLK);
         else if(message.mtype == 2)
-            log_text = "The Kernel asked Disk to DEL slot #" + message_text 
+            log_text = "- The Kernel asked Disk to DEL slot #" + message_text 
                         + " at Time Slot " + to_string(CLK);
     }
 
+    // Not Used
     else if(event_type == process_terminated)
     {
-        log_text = "Process with PID " + message_text 
+        string message_text(message.mtext);
+        log_text = "- Process with PID " + message_text 
                  + " terminated with exit code " + to_string(message.mtype)
                  + " at Time Slot " + to_string(CLK);
+    }
+
+    else if(event_type == request_disk_status)
+    {
+        log_text = "\n- The Kernel asked Disk for Its Status at Time Slot " 
+                    + to_string(CLK);
     }
 
     log_file <<  log_text << endl;
@@ -299,7 +312,7 @@ void Process_terminated(int SigNum)
 ////////////////////////////////////////////////////////////////////////////
 void End()
 {
-    string log_text = "Kernel Terminated at Time Slot " + to_string(CLK);
+    string log_text = "\n- Kernel Terminated at Time Slot " + to_string(CLK);
     log_file <<  log_text << endl;
     log_file.close();
     msgctl(process_to_kernel_q, IPC_RMID, (struct msqid_ds *) 0);
