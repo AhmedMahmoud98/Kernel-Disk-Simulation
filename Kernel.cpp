@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
     signal(SIGALRM, move_on);
     signal(SIGCHLD, Process_terminated);
     signal(SIGUSR2, SIG_IGN);
-    //number_of_alive_processes = number_of_processes = atoi(argv[1]);
-    number_of_alive_processes = number_of_processes = 2;
+    number_of_alive_processes = number_of_processes = atoi(argv[1]);
+    //number_of_alive_processes = number_of_processes = 2;
     log_file.open("log_file.txt", ios::out | ios::trunc );
 
     create_msg_queues();
